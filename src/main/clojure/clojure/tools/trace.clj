@@ -73,11 +73,23 @@
 (defn- aprint-str [& args]
   (str/trim (with-out-str (apply aprint args))))
 
+(defn- add-all-line-prefix [prefix s]
+  (let [lines (str/split-lines s)]
+    (str/join "\n" (map #(str prefix %) lines))))
+
+(defn- add-first-line-prefix [prefix s]
+  (let [lines (str/split-lines s)]
+    (str/join "\n"
+              (conj (map #(str (str/join (map (constantly " ") prefix)) %)
+                         (rest lines))
+                    (str prefix (first lines))))))
+
 (defn ^{:private true} tracer
   "This function is called by trace. Prints to standard output, but
 may be rebound to do anything you like. 'name' is optional."
   [name value]
-  (println (str "TRACE" (when name (str " " name)) ": " value)))
+  (println (add-first-line-prefix (str "TRACE" (when name (str " " name)) ": ")
+                                  value)))
 
 (defn trace
   "Sends name (optional) and value to the tracer function, then
@@ -95,13 +107,15 @@ affecting the result."
 
 (defn ^{:skip-wiki true} trace-fn-call
   "Traces a single call to a function f with args. 'name' is the
-symbol name of the function."
+  symbol name of the function."
   [name f args]
   (let [id (gensym "t")]
-    (tracer id (str (trace-indent) (aprint-str (cons name args))))
+    (tracer id (add-all-line-prefix (trace-indent)
+                                    (aprint-str (cons name args))))
     (let [value (binding [*trace-depth* (inc *trace-depth*)]
                   (apply f args))]
-      (tracer id (str (trace-indent) "=> " (aprint-str value)))
+      (tracer id (add-first-line-prefix (str (trace-indent) "=> ")
+                                        (aprint-str value)))
       value)))
 
 (defmacro deftrace

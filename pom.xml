@@ -22,7 +22,7 @@
   <scm>
     <connection>scm:git:git://github.com/mschulkind/tools.trace.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/mschulkind/tools.trace.git</developerConnection>
-    <tag>9c3f9afc32a5cb3c42a99be98040937557ba32cd
+    <tag>6eb463cc740d9a2fdbfec0d19df0c946a7ca9bd6
 </tag>
     <url>https://github.com/mschulkind/tools.trace</url>
   </scm>
