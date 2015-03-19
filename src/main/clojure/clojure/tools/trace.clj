@@ -61,13 +61,17 @@
       :doc "This file defines simple tracing macros to help you see what your code is doing."}
      clojure.tools.trace
   (:use [clojure.pprint]
-        [aprint.core]))
+        [aprint.core])
+  (:require [clojure.string :as str]))
 
 (def ^{:doc "Current stack depth of traced function calls." :private true :dynamic true}
       *trace-depth* 0)
 
 (def ^{:doc "Forms to ignore when tracing forms." :private true}
       ignored-form? '#{def quote var try monitor-enter monitor-exit assert})
+
+(defn- aprint-str [& args]
+  (str/trim (with-out-str (apply aprint args))))
 
 (defn ^{:private true} tracer
   "This function is called by trace. Prints to standard output, but
@@ -81,7 +85,7 @@ returns value. May be wrapped around any expression without
 affecting the result."
   ([value] (trace nil value))
   ([name value]
-     (tracer name (aprint value))
+     (tracer name (aprint-str value))
      value))
 
 (defn ^{:private true} trace-indent
@@ -94,10 +98,10 @@ affecting the result."
 symbol name of the function."
   [name f args]
   (let [id (gensym "t")]
-    (tracer id (str (trace-indent) (aprint (cons name args))))
+    (tracer id (str (trace-indent) (aprint-str (cons name args))))
     (let [value (binding [*trace-depth* (inc *trace-depth*)]
                   (apply f args))]
-      (tracer id (str (trace-indent) "=> " (aprint value)))
+      (tracer id (str (trace-indent) "=> " (aprint-str value)))
       value)))
 
 (defmacro deftrace
